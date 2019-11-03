@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_0jmihab" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.4.1">
+  <bpmn:collaboration id="Collaboration_05rsajv">
+    <bpmn:participant id="Participant_02we13f" name="Student Application" processRef="Process_0pipmou" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_0pipmou" isExecutable="true">
+    <bpmn:sendTask id="Task_12h8ynzff" name="Check Loan Eligibility" camunda:delegateExpression="#{checkIntakeApplicationLoanEligibilityAdapter}">
+      <bpmn:incoming>SequenceFlow_1gv6b1z</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1aitwbi</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="Task_1nishok" name="Check Quality" camunda:delegateExpression="#{checkIntakeApplicationQualityAdapter}">
+      <bpmn:incoming>SequenceFlow_1hby9pc</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1uap2mv</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:startEvent id="StartEvent_1" name="Intake Application Received">
+      <bpmn:outgoing>SequenceFlow_1gv6b1z</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Message_1buyeuv" />
+    </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_0mklskm" name="Application Approved">
+      <bpmn:incoming>SequenceFlow_0f9al1a</bpmn:incoming>
+      <bpmn:messageEventDefinition camunda:delegateExpression="#{approveIntakeApplicationAdapter}" />
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_1qzbb97" name="Application Declined">
+      <bpmn:incoming>SequenceFlow_1pz4hhl</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1j0326q" camunda:delegateExpression="#{declineIntakeApplicationAdapter}" />
+    </bpmn:endEvent>
+    <bpmn:eventBasedGateway id="ExclusiveGateway_04fttu8" name="Is eligible for a loan">
+      <bpmn:incoming>SequenceFlow_1aitwbi</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1tv0aqr</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_0i354fr</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:eventBasedGateway id="ExclusiveGateway_0ositg8" name="Is quality satisfied">
+      <bpmn:incoming>SequenceFlow_1uap2mv</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0x6fw1j</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1oss2up</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:endEvent id="EndEvent_0bot202" name="Application Declined">
+      <bpmn:incoming>SequenceFlow_05bnjj7</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_163y02w" camunda:delegateExpression="#{declineIntakeApplicationAdapter}" />
+    </bpmn:endEvent>
+    <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_0bkfmug" name="Loan Approved&#10;&#10;">
+      <bpmn:incoming>SequenceFlow_1tv0aqr</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1hby9pc</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Message_0eqmwjp" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_1grd4ap" name="Loan Declined&#10;&#10;">
+      <bpmn:incoming>SequenceFlow_0i354fr</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1pz4hhl</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Message_0apufiy" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_1dfh3cm" name="Quality Accepted&#10;&#10;">
+      <bpmn:incoming>SequenceFlow_0x6fw1j</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0f9al1a</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Message_0yew8o9" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_1jl6i3a" name="Quality Declined">
+      <bpmn:incoming>SequenceFlow_1oss2up</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_05bnjj7</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Message_1ffxu90" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1gv6b1z" sourceRef="StartEvent_1" targetRef="Task_12h8ynzff" />
+    <bpmn:sequenceFlow id="SequenceFlow_1aitwbi" sourceRef="Task_12h8ynzff" targetRef="ExclusiveGateway_04fttu8" />
+    <bpmn:sequenceFlow id="SequenceFlow_1hby9pc" sourceRef="IntermediateCatchEvent_0bkfmug" targetRef="Task_1nishok" />
+    <bpmn:sequenceFlow id="SequenceFlow_1uap2mv" sourceRef="Task_1nishok" targetRef="ExclusiveGateway_0ositg8" />
+    <bpmn:sequenceFlow id="SequenceFlow_0f9al1a" sourceRef="IntermediateCatchEvent_1dfh3cm" targetRef="EndEvent_0mklskm" />
+    <bpmn:sequenceFlow id="SequenceFlow_1pz4hhl" sourceRef="IntermediateCatchEvent_1grd4ap" targetRef="EndEvent_1qzbb97" />
+    <bpmn:sequenceFlow id="SequenceFlow_1tv0aqr" sourceRef="ExclusiveGateway_04fttu8" targetRef="IntermediateCatchEvent_0bkfmug" />
+    <bpmn:sequenceFlow id="SequenceFlow_0i354fr" sourceRef="ExclusiveGateway_04fttu8" targetRef="IntermediateCatchEvent_1grd4ap" />
+    <bpmn:sequenceFlow id="SequenceFlow_0x6fw1j" sourceRef="ExclusiveGateway_0ositg8" targetRef="IntermediateCatchEvent_1dfh3cm" />
+    <bpmn:sequenceFlow id="SequenceFlow_1oss2up" sourceRef="ExclusiveGateway_0ositg8" targetRef="IntermediateCatchEvent_1jl6i3a" />
+    <bpmn:sequenceFlow id="SequenceFlow_05bnjj7" sourceRef="IntermediateCatchEvent_1jl6i3a" targetRef="EndEvent_0bot202" />
+  </bpmn:process>
+  <bpmn:message id="Message_1buyeuv" name="IntakeApplicationReceived" />
+  <bpmn:message id="Message_0eqmwjp" name="IntakeApplicationLoanApproved" />
+  <bpmn:message id="Message_190kede" name="ApplicationLowQuality" />
+  <bpmn:message id="Message_0obkf8r" name="ApplicationLoanDeclined" />
+  <bpmn:message id="Message_0yew8o9" name="IntakeApplicationQualityAccepted" />
+  <bpmn:message id="Message_0apufiy" name="IntakeApplicationLoanDeclined" />
+  <bpmn:message id="Message_12uroek" name="IntakeApplicationLoanDeclined" />
+  <bpmn:message id="Message_1ffxu90" name="IntakeApplicationQualityDeclined" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_05rsajv">
+      <bpmndi:BPMNShape id="Participant_02we13f_di" bpmnElement="Participant_02we13f" isHorizontal="true">
+        <dc:Bounds x="160" y="50" width="958" height="330" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1gv6b1z_di" bpmnElement="SequenceFlow_1gv6b1z">
+        <di:waypoint x="278" y="170" />
+        <di:waypoint x="330" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="SendTask_1l2fu2j_di" bpmnElement="Task_12h8ynzff">
+        <dc:Bounds x="330" y="130" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SendTask_01avkbj_di" bpmnElement="Task_1nishok">
+        <dc:Bounds x="680" y="130" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_18h5mmy_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="242" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="234" y="195" width="54" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_12jpusw_di" bpmnElement="EndEvent_0mklskm">
+        <dc:Bounds x="1022" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1013" y="114.5" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1qzbb97_di" bpmnElement="EndEvent_1qzbb97">
+        <dc:Bounds x="682" y="262" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="675" y="305" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EventBasedGateway_0tpxuvs_di" bpmnElement="ExclusiveGateway_04fttu8">
+        <dc:Bounds x="485" y="145" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="480" y="115" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1aitwbi_di" bpmnElement="SequenceFlow_1aitwbi">
+        <di:waypoint x="430" y="170" />
+        <di:waypoint x="485" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EventBasedGateway_0oeausz_di" bpmnElement="ExclusiveGateway_0ositg8">
+        <dc:Bounds x="835" y="145" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="819" y="115" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1uap2mv_di" bpmnElement="SequenceFlow_1uap2mv">
+        <di:waypoint x="780" y="170" />
+        <di:waypoint x="835" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_0bot202_di" bpmnElement="EndEvent_0bot202">
+        <dc:Bounds x="1022" y="262" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1015" y="305" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="IntermediateCatchEvent_0bkfmug_di" bpmnElement="IntermediateCatchEvent_0bkfmug">
+        <dc:Bounds x="592" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="573" y="195" width="75" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1tv0aqr_di" bpmnElement="SequenceFlow_1tv0aqr">
+        <di:waypoint x="535" y="170" />
+        <di:waypoint x="592" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="IntermediateCatchEvent_1grd4ap_di" bpmnElement="IntermediateCatchEvent_1grd4ap">
+        <dc:Bounds x="592" y="262" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="575" y="305" width="71" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0i354fr_di" bpmnElement="SequenceFlow_0i354fr">
+        <di:waypoint x="510" y="195" />
+        <di:waypoint x="510" y="280" />
+        <di:waypoint x="592" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1hby9pc_di" bpmnElement="SequenceFlow_1hby9pc">
+        <di:waypoint x="628" y="170" />
+        <di:waypoint x="680" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1pz4hhl_di" bpmnElement="SequenceFlow_1pz4hhl">
+        <di:waypoint x="628" y="280" />
+        <di:waypoint x="682" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="IntermediateCatchEvent_1dfh3cm_di" bpmnElement="IntermediateCatchEvent_1dfh3cm">
+        <dc:Bounds x="932" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="909" y="195" width="84" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0x6fw1j_di" bpmnElement="SequenceFlow_0x6fw1j">
+        <di:waypoint x="885" y="170" />
+        <di:waypoint x="932" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="IntermediateCatchEvent_1jl6i3a_di" bpmnElement="IntermediateCatchEvent_1jl6i3a">
+        <dc:Bounds x="932" y="262" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="911" y="305" width="81" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1oss2up_di" bpmnElement="SequenceFlow_1oss2up">
+        <di:waypoint x="860" y="195" />
+        <di:waypoint x="860" y="280" />
+        <di:waypoint x="932" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_05bnjj7_di" bpmnElement="SequenceFlow_05bnjj7">
+        <di:waypoint x="968" y="280" />
+        <di:waypoint x="1022" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0f9al1a_di" bpmnElement="SequenceFlow_0f9al1a">
+        <di:waypoint x="968" y="170" />
+        <di:waypoint x="1022" y="170" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
