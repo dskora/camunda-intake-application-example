@@ -1,0 +1,48 @@
+version: '2'
+services:
+  camunda:
+    container_name: camunda
+    build:
+      context: intake-application-camunda/
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - axon-server
+
+  axon-server:
+    image: axoniq/axonserver
+    container_name: axon-server
+    ports:
+      - 8024:8024
+      - 8124:8124
+
+  finance-service:
+    container_name: finance-service
+    build:
+      context: finance/
+      dockerfile: Dockerfile
+    ports:
+      - 8100:8080
+    depends_on:
+      - axon-server
+
+  quality-service:
+    container_name: quality-service
+    build:
+      context: quality/
+      dockerfile: Dockerfile
+    ports:
+      - 8101:8080
+    depends_on:
+      - axon-server
+
+  web-service:
+    container_name: web-service
+    build:
+      context: web/
+      dockerfile: Dockerfile
+    ports:
+      - 8102:8080
+    depends_on:
+      - axon-server
